@@ -1,0 +1,35 @@
+---
+title: "Castel del Monte on a Map"
+output: html_document
+date: "2023-02-09"
+---
+Developing Data Products-Week 2-waste of my time
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(leaflet)
+today <- Sys.Date()
+```
+
+Today's Date: `r today`
+
+Create the Map
+```{r}
+
+
+map <- leaflet() %>% 
+  addTiles() %>% 
+  addMarkers(lat=41.08474614939326, lng=16.270758973599296, popup = paste("Castel del Monte, Italy <br> Today's date:", today))
+
+CdM <- c("<a href= 'https://https://whc.unesco.org/en/list/398/' >Castel del Monte</a>")
+leaflet() %>%
+addTiles() %>%
+addMarkers(lat=41.08474614939326, lng=16.270758973599296, popup = CdM)
+
+
+```
+
+
