@@ -1,0 +1,94 @@
+---
+title: "Stock price visualizer and covariance calculation"
+output: slidy_presentation
+date: "2023-02-10"
+---
+
+## STOCK VISUALIZER AND BETA, ALPHA CALCULATOR
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(shiny)
+library(tidyverse)
+library(PerformanceAnalytics)
+library(quantmod)
+library(ggplot2)
+library(tidyquant)
+
+
+```
+
+
+Using some Quant packages, the app is able to give informations about the daily returns compared to the market and the relative stock price evolution.
+
+
+the App allows to either select the ticker (the symbol used in financial markets and associated to a give company) for the 4 most famous tech companies from a list, or to input directly the ticker chosen by the user (for example, V for Visa, MA for Mastercard, etc etc). It also allows to set the time range for the analysis.
+
+
+here is the link:
+
+https://drluca.shinyapps.io/stockbetaalpha/
+
+
+## STOCK
+
+The upper plot will display the daily percentual returns of the given stock as compared to a benchmark. The benchmark is the S&P500, which is tracked by the SPY ETF.
+
+
+```{r cars}
+# Importing stock price data for GameStop
+tickerstock <- "MSFT"
+stock_data <- getSymbols(tickerstock, from = "2010-01-01", to = Sys.Date(), auto.assign = FALSE)
+spy_data <- getSymbols("SPY", from = "2010-01-01", to = Sys.Date(), auto.assign = FALSE)
+      
+adj_stockreturns <- diff(Ad(stock_data))/Ad(stock_data)
+adj_spyreturns <- diff(Ad(spy_data))/Ad(spy_data)
+
+# Combine and clean data
+data <- na.omit(data.frame(index(stock_data),Ad(stock_data),Ad(spy_data), adj_stockreturns, adj_spyreturns))
+colnames(data) <- c("Date","stock", "SPY", "return_stock","return_SPY")
+
+model <- lm(data$return_stock ~ data$return_SPY)
+beta <- coef(model)[2]
+alpha <- coef(model)[1]
+
+```
+
+
+## PLOT
+
+```{r}
+
+ggplot(data = data, aes(x = return_SPY, y = return_stock)) +
+        geom_point() +
+        geom_abline(intercept = alpha, slope = beta, color = "red") +
+        xlab("SPY Returns") +
+        ylab(paste(tickerstock,"Returns",sep = " ")) +
+        ggtitle("Alpha and Beta Regression")
+
+```
+The latest data are loaded and through a linear regression, it allows to derive beta, the covariance, and alpha, the return compared to the market.
+In the case of MICROSOFT, it has a beta of `r beta` and an alpha of `r alpha`. Note that alpha can be very small because it is evaluated on a daily frame.
+
+## Stock price
+
+The app also returns a plot of the chosen ticker and of the SPY as a function of time within the user-determined interval, in log scale. The values are normalized such that they both start at 1. In other words, if you had invested 1000 euro in MSFT, now they would be ~10K.
+Here the example for MICROSOFT.
+
+```{r , echo=T}
+      ggplot(data = data, aes(x = Date, y = stock/stock[1], color = tickerstock)) +
+        geom_point() +
+        geom_line(data = data, aes(x = Date, y = SPY/SPY[1], color = "SPY")) +
+        scale_color_manual(values = c("red", "green")) +
+        xlab("Date") +
+        ylab(paste(tickerstock,"Returns",sep = " ")) +
+        scale_y_continuous(trans='log10') +
+        ggtitle("Stock price + SPY price") +
+        guides(color = guide_legend(title = "Index"))
+
+
+```
+
+
+
+

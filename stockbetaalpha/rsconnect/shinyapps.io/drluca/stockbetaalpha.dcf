@@ -1,0 +1,11 @@
+name: stockbetaalpha
+title:
+username:
+account: drluca
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8282306
+bundleId: 6833625
+url: https://drluca.shinyapps.io/stockbetaalpha/
+when: 1676060075.28207
+lastSyncTime: 1676060075.28211
